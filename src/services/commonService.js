@@ -1,9 +1,9 @@
-import axios from '../utils/axios'
+import request from '../utils/request'
 import errorMessage from '../utils/errorMessage'
 import { message } from 'antd'
 
 export async function getDataService (config, params) {
-  const res = await axios({
+  const res = await request({
     url: config.url,
     method: 'get',
     data: { ...params, random: new Date().getTime() }
@@ -35,7 +35,7 @@ export async function getDataService (config, params) {
 }
 
 export async function postDataService (config, params) {
-  const res = await axios({
+  const res = await request({
     url: config.url,
     method: 'post',
     data: params,

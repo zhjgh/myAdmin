@@ -119,9 +119,9 @@ export default class BasicLayout extends React.PureComponent {
       });
     });
     const { dispatch } = this.props;
-    dispatch({
+    /* dispatch({
       type: 'user/fetchCurrent',
-    });
+    }); */
   }
 
   componentWillUnmount() {

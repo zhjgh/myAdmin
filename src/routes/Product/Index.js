@@ -1,13 +1,13 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'dva';
 import List from './List';
 import { Card } from 'antd';
 import PageHeaderLayout from '../../layouts/PageHeaderLayout';
 
-const Products = ({ dispatch, products, loading }) => {
-
+const Index = ({ products, loading, dispatch }) => {
   const list = {
-    products: products.list,
+    list: products.list,
     loading,
     onDelete(id) {
       dispatch({
@@ -25,7 +25,13 @@ const Products = ({ dispatch, products, loading }) => {
   );
 };
 
+Index.propTypes = {
+  products: PropTypes.object.isRequired,
+  loading: PropTypes.bool.isRequired,
+  dispatch: PropTypes.func.isRequired,
+};
+
 export default connect(({ products, loading }) => ({
   products,
   loading: loading.models.products,
-}))(Products);
+}))(Index);

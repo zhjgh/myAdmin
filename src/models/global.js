@@ -1,15 +1,13 @@
-import { queryNotices } from '../services/api';
+// import { queryNotices } from '../services/api';
 
 export default {
   namespace: 'global',
-
   state: {
     collapsed: false,
     notices: [],
   },
-
   effects: {
-    *fetchNotices(_, { call, put }) {
+    /* *fetchNotices(_, { call, put }) {
       const data = yield call(queryNotices);
       yield put({
         type: 'saveNotices',
@@ -30,9 +28,8 @@ export default {
         type: 'user/changeNotifyCount',
         payload: count,
       });
-    },
+    }, */
   },
-
   reducers: {
     changeLayoutCollapsed(state, { payload }) {
       return {
@@ -40,7 +37,7 @@ export default {
         collapsed: payload,
       };
     },
-    saveNotices(state, { payload }) {
+    /* saveNotices(state, { payload }) {
       return {
         ...state,
         notices: payload,
@@ -51,9 +48,8 @@ export default {
         ...state,
         notices: state.notices.filter(item => item.type !== payload),
       };
-    },
+    }, */
   },
-
   subscriptions: {
     setup({ history }) {
       // Subscribe history(url) change, trigger `load` action if pathname is `/`

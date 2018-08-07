@@ -4,9 +4,10 @@ import moment from 'moment';
 import groupBy from 'lodash/groupBy';
 import Debounce from 'lodash-decorators/debounce';
 import { Link } from 'dva/router';
-import NoticeIcon from '../NoticeIcon';
-import HeaderSearch from '../HeaderSearch';
+// import NoticeIcon from '../NoticeIcon';
+// import HeaderSearch from '../HeaderSearch';
 import styles from './index.less';
+import config from '../../utils/config';
 
 export default class GlobalHeader extends PureComponent {
   componentWillUnmount() {
@@ -151,7 +152,7 @@ export default class GlobalHeader extends PureComponent {
               emptyImage="https://gw.alipayobjects.com/zos/rmsportal/HsIsxMZiWKrNUavQUXqx.svg"
             />
           </NoticeIcon> */}
-          {currentUser.name ? (
+          {/* currentUser.name ? (
             <Dropdown overlay={menu}>
               <span className={`${styles.action} ${styles.account}`}>
                 <Avatar size="small" className={styles.avatar} src={currentUser.avatar} />
@@ -160,7 +161,14 @@ export default class GlobalHeader extends PureComponent {
             </Dropdown>
           ) : (
             <Spin size="small" style={{ marginLeft: 8 }} />
-          )}
+          ) */}
+
+          <Dropdown overlay={menu}>
+            <span className={`${styles.action} ${styles.account}`}>
+              <Avatar size="small" className={styles.avatar} src={config.logo} />
+              <span className={styles.name}>董小姐</span>
+            </span>
+          </Dropdown>
         </div>
       </div>
     );

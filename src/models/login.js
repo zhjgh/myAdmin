@@ -1,20 +1,18 @@
 import { routerRedux } from 'dva/router';
 import { stringify } from 'qs';
-import { fakeAccountLogin } from '../services/api';
+// import { fakeAccountLogin } from '../services/api';
 import { setAuthority } from '../utils/authority';
 import { reloadAuthorized } from '../utils/Authorized';
 import { getPageQuery } from '../utils/utils';
 
 export default {
   namespace: 'login',
-
   state: {
-    status: undefined,
+    type: 'account',
   },
-
   effects: {
     *login({ payload }, { call, put }) {
-      const response = yield call(fakeAccountLogin, payload);
+      /* const response = yield call(fakeAccountLogin, payload);
       yield put({
         type: 'changeLoginStatus',
         payload: response,
@@ -23,8 +21,11 @@ export default {
       if (response.status === 'ok') {
         reloadAuthorized();
         const urlParams = new URL(window.location.href);
+        console.log(urlParams)
         const params = getPageQuery();
+        console.log(params)
         let { redirect } = params;
+        console.log(redirect)
         if (redirect) {
           const redirectUrlParams = new URL(redirect);
           if (redirectUrlParams.origin === urlParams.origin) {
@@ -38,17 +39,17 @@ export default {
           }
         }
         yield put(routerRedux.replace(redirect || '/'));
-      }
+      } */
     },
     *logout(_, { put }) {
-      yield put({
+      /* yield put({
         type: 'changeLoginStatus',
         payload: {
           status: false,
           currentAuthority: 'guest',
         },
       });
-      reloadAuthorized();
+      reloadAuthorized(); */
       yield put(
         routerRedux.push({
           pathname: '/user/login',

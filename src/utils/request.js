@@ -1,100 +1,148 @@
-import fetch from 'dva/fetch';
-import { notification } from 'antd';
-import { routerRedux } from 'dva/router';
-import store from '../index';
+import axios from 'axios'
+import qs from 'qs'
+import { baseURL } from './config'
+import jsonp from 'jsonp'
+import lodash from 'lodash'
+import pathToRegexp from 'path-to-regexp'
+import { message } from 'antd'
 
-const codeMessage = {
-  200: '服务器成功返回请求的数据。',
-  201: '新建或修改数据成功。',
-  202: '一个请求已经进入后台排队（异步任务）。',
-  204: '删除数据成功。',
-  400: '发出的请求有错误，服务器没有进行新建或修改数据的操作。',
-  401: '用户没有权限（令牌、用户名、密码错误）。',
-  403: '用户得到授权，但是访问是被禁止的。',
-  404: '发出的请求针对的是不存在的记录，服务器没有进行操作。',
-  406: '请求的格式不可得。',
-  410: '请求的资源被永久删除，且不会再得到的。',
-  422: '当创建一个对象时，发生一个验证错误。',
-  500: '服务器发生错误，请检查服务器。',
-  502: '网关错误。',
-  503: '服务不可用，服务器暂时过载或维护。',
-  504: '网关超时。',
-};
-function checkStatus(response) {
-  if (response.status >= 200 && response.status < 300) {
-    return response;
+// axios.defaults.baseURL = baseURL
+
+const fetch = (options) => {
+  let {
+    method = 'get',
+    data = {},
+    fetchType,
+    url,
+  } = options
+
+  // 所有的除了登录的接口都需要token
+  /* if(localStorage.getItem('token')){
+    data.token = localStorage.getItem('token')
+  }*/
+
+  const cloneData = lodash.cloneDeep(data)
+
+  try {
+    let domin = ''
+    if (url.match(/[a-zA-z]+:\/\/[^/]*/)) {
+      domin = url.match(/[a-zA-z]+:\/\/[^/]*/)[0]
+      url = url.slice(domin.length)
+    }
+    const match = pathToRegexp.parse(url)
+    url = pathToRegexp.compile(url)(data)
+    for (let item of match) {
+      if (item instanceof Object && item.name in cloneData) {
+        delete cloneData[item.name]
+      }
+    }
+    url = domin + url
+  } catch (e) {
+    message.error(e.message)
   }
-  const errortext = codeMessage[response.status] || response.statusText;
-  notification.error({
-    message: `请求错误 ${response.status}: ${response.url}`,
-    description: errortext,
-  });
-  const error = new Error(errortext);
-  error.name = response.status;
-  error.response = response;
-  throw error;
+
+  /* if (fetchType === 'JSONP') {
+    return new Promise((resolve, reject) => {
+      jsonp(url, {
+        param: `${qs.stringify(data)}&callback`,
+        name: `jsonp_${new Date().getTime()}`,
+        timeout: 4000,
+      }, (error, result) => {
+        if (error) {
+          reject(error)
+        }
+        resolve({ statusText: 'OK', status: 200, data: result })
+      })
+    })
+  } else if (fetchType === 'YQL') {
+    url = `http://query.yahooapis.com/v1/public/yql?q=select * from json where url='${options.url}?${qs.stringify(options.data)}'&format=json`
+    data = null
+  } */
+
+  switch (method.toLowerCase()) {
+    case 'get':
+      return axios.get(url, {
+        params: cloneData,
+      })
+    case 'delete':
+      return axios.delete(url, {
+        data: cloneData,
+      })
+    case 'post':
+      return axios.post(url, cloneData)
+    case 'put':
+      return axios.put(url, cloneData)
+    case 'patch':
+      return axios.patch(url, cloneData)
+    default:
+      return axios(options)
+  }
 }
 
-/**
- * Requests a URL, returning a promise.
- *
- * @param  {string} url       The URL we want to request
- * @param  {object} [options] The options we want to pass to "fetch"
- * @return {object}           An object containing either "data" or "err"
- */
-export default function request(url, options) {
-  const defaultOptions = {
-    credentials: 'include',
-  };
-  const newOptions = { ...defaultOptions, ...options };
-  if (
-    newOptions.method === 'POST' ||
-    newOptions.method === 'PUT' ||
-    newOptions.method === 'DELETE'
-  ) {
-    if (!(newOptions.body instanceof FormData)) {
-      newOptions.headers = {
-        Accept: 'application/json',
-        'Content-Type': 'application/json; charset=utf-8',
-        ...newOptions.headers,
-      };
-      newOptions.body = JSON.stringify(newOptions.body);
-    } else {
-      // newOptions.body is FormData
-      newOptions.headers = {
-        Accept: 'application/json',
-        ...newOptions.headers,
-      };
+export default function request (options) {
+  // 如果正在请求则不进行请求
+  if (options.method !== 'get') {
+    let hasServiceId = localStorage.getItem(options.data.serviceId)
+    if (hasServiceId === 'true') {
+      return {
+        success: false,
+        code: '9999',
+        message: '重复提交请求',
+      }
+    }
+    if (options.data.serviceId) {
+      localStorage.setItem(options.data.serviceId, true)
     }
   }
 
-  return fetch(url, newOptions)
-    .then(checkStatus)
-    .then(response => {
-      if (newOptions.method === 'DELETE' || response.status === 204) {
-        return response.text();
+  axios.defaults.headers.common.token = localStorage.getItem('token')
+
+  /* if (options.url && options.url.indexOf('//') > -1) {
+    const origin = `${options.url.split('//')[0]}//${options.url.split('//')[1].split('/')[0]}`
+    if (window.location.origin !== origin) {
+      if (CORS && CORS.indexOf(origin) > -1) {
+        options.fetchType = 'CORS'
+      } else if (YQL && YQL.indexOf(origin) > -1) {
+        options.fetchType = 'YQL'
+      } else {
+        options.fetchType = 'JSONP'
       }
-      return response.json();
-    })
-    .catch(e => {
-      const { dispatch } = store;
-      const status = e.name;
-      if (status === 401) {
-        dispatch({
-          type: 'login/logout',
-        });
-        return;
-      }
-      if (status === 403) {
-        dispatch(routerRedux.push('/exception/403'));
-        return;
-      }
-      if (status <= 504 && status >= 500) {
-        dispatch(routerRedux.push('/exception/500'));
-        return;
-      }
-      if (status >= 404 && status < 422) {
-        dispatch(routerRedux.push('/exception/404'));
-      }
-    });
+    }
+  } */
+
+  return fetch(options).then((response) => {
+    const { statusText, status } = response
+    let data = options.fetchType === 'YQL' ? response.data.query.results.json : response.data
+    // remove the serviceId
+    let serviceId = options.data.serviceId
+    if (serviceId) {
+      localStorage.removeItem(serviceId)
+    }
+    return {
+      success: true,
+      message: statusText,
+      status,
+      ...data,
+    }
+  }).catch((error) => {
+    // remove the serviceId
+    let serviceId = options.data.serviceId
+    if (serviceId) {
+      localStorage.removeItem(serviceId)
+    }
+    const { response } = error
+    let msg
+    let status
+    let otherData = {}
+    if (response) {
+      const { data, statusText } = response
+      otherData = data
+      status = response.status
+      msg = data.message || statusText
+    } else {
+      status = 600
+      msg = '网络错误'
+    }
+    return { success: false, status, message: msg, ...otherData }
+  })
 }
