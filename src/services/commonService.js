@@ -18,7 +18,7 @@ export async function getDataService (config, params) {
       } else if (errorMessage[code] === null){
 
       } else {
-        message.warning('系统错误', 5)
+        // message.warning('系统错误', 5)
       }
     }
   }
@@ -50,7 +50,7 @@ export async function postDataService (config, params) {
       } else if (errorMessage[code] === null){
 
       } else {
-        message.warning('系统错误', 5)
+        // message.warning('系统错误', 5)
       }
     }
   }
