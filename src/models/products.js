@@ -19,7 +19,7 @@ export default {
   },
   effects: {
     *query({ payload }, { call, put }){
-      const data = yield call(getDataService, { url:api.queryProductList })
+      const data = yield call(getDataService, { url:api.queryProductList }, { serviceId:'queryProductList' })
       yield put({
         type: 'update',
         payload: data.subjects,

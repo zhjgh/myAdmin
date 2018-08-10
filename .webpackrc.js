@@ -13,7 +13,13 @@ export default {
     rollbar: 'rollbar',
   },
   alias: {
+    common: path.resolve(__dirname, 'src/common/'),
     components: path.resolve(__dirname, 'src/components/'),
+    layout: path.resolve(__dirname, 'src/layout/'),
+    routes: path.resolve(__dirname, 'src/routes/'),
+    services: path.resolve(__dirname, 'src/services/'),
+    utils: path.resolve(__dirname, 'src/utils/'),
+    '@': path.resolve(__dirname, 'src/'),
   },
   ignoreMomentLocale: true,
   theme: './src/theme.js',
